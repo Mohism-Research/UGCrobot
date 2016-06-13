@@ -142,4 +142,57 @@ object BaiduParser {
 
   }
 
+  /**
+    * 获取贴吧网页的所有用户名
+    *
+    * @author niujiaojiao
+    * @param html 将要解析的页面信息字符串
+    * @return 贴吧用户名的集合
+    */
+  def getName(html: String): mutable.Set[String] = {
+
+    val set = mutable.Set[String]()
+    val doc = Jsoup.parse(html, "UTF-8")
+    val title = doc.title()
+    var barName = ""
+
+    try {
+
+      if (title.contains("_")) {
+
+        barName = title.split("_")(1)
+        barName = barName.substring(0, barName.length - 1)
+
+      }
+
+      var map = collection.mutable.Map[String, Int]()
+      val content = doc.select("div#j_p_postlist  ul.p_author  li.d_name a")
+
+      for (i <- 0 until content.size) {
+
+        val child = content.get(i)
+        val allUser = child.text()
+        map += (allUser -> 1)
+
+      }
+
+      val result = map.keySet
+
+      var allName = ""
+
+      for (s: String <- result) {
+
+        val name = barName + " ," + s.toString
+        set.add(name)
+
+      }
+
+      set
+    } catch {
+      case e: NullPointerException =>
+        null
+    }
+
+  }
+
 }

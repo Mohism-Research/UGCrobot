@@ -121,9 +121,9 @@ object Scheduler {
 
       val messages = BaiduParser.getHotPosts(html)
 
-      if(messages.nonEmpty){
+      if (messages.nonEmpty) {
         lazyConnBr.value.sendTask("robot_stock", messages.map(getUrlJsonString).toSeq)
-      }else {
+      } else {
         println("THIS IS ERROR" + originUrl)
       }
 
@@ -135,10 +135,21 @@ object Scheduler {
       if (tuple != null) {
 
         lazyConnBr.value.sendTask("robot_tiebacomment", getCommentJsonString(originUrl, tuple))
-        lazyConnBr.value.sendTask("robot_tiebacomment", getCommentJsonString(originUrl, (tuple._1, tuple._2, tuple._3, "")))
-
       }
+
+      val nameSet = BaiduParser.getName(html)
+
+      if (nameSet.nonEmpty) {
+        nameSet.foreach(
+          x => {
+            println(getNameJsonString(originUrl, x))
+            lazyConnBr.value.sendTask("robot_tiebacomment", getNameJsonString(originUrl, x))
+          }
+        )
+      }
+
     }
+
   }
 
   /**
@@ -221,6 +232,20 @@ object Scheduler {
     val json = "{\"plat_id\":%d, \"preUrl\":\"%s\", \"kw\":\"%s\", \"fid\":\"%s\", \"tbs\":\"%s\", \"repostid\":\"%s\", \"timestamp\":\"%s\"}"
 
     json.format(Platform.Tieba.id, url, tuple._1, tuple._2, tuple._3, tuple._4, DateUtil.getDateString)
+  }
+
+  /**
+    * 拼接百度贴吧json
+    *
+    * @param url  url地址
+    * @param name 用户名字
+    * @return json格式的消息的字符串
+    */
+  def getNameJsonString(url: String, name: String): String = {
+
+    val json = "{\"plat_id\":%d, \"preUrl\":\"%s\", \"user_name\":\"%s\", \"timestamp\":\"%s\"}"
+
+    json.format(Platform.Tieba.id, url, name, DateUtil.getDateString)
   }
 
   /**
