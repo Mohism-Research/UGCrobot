@@ -143,13 +143,13 @@ object BaiduParser {
   }
 
   /**
-    * 获取贴吧网页的所有用户名
+    * 获取贴吧网页的所有repostid和贴吧名
     *
     * @author niujiaojiao
     * @param html 将要解析的页面信息字符串
-    * @return 贴吧用户名的集合
+    * @return 元组集合
     */
-  def getName(html: String): mutable.Set[String] = {
+  def getName(html: String): (String, mutable.Set[String]) = {
 
     val set = mutable.Set[String]()
     val doc = Jsoup.parse(html, "UTF-8")
@@ -165,29 +165,23 @@ object BaiduParser {
 
       }
 
-      var map = collection.mutable.Map[String, Int]()
-      val content = doc.select("div#j_p_postlist  ul.p_author  li.d_name a")
+      val list = doc.select("div#j_p_postlist  > div")
 
-      for (i <- 0 until content.size) {
+      for(i<- 0 until list.size){
 
-        val child = content.get(i)
-        val allUser = child.text()
-        map += (allUser -> 1)
+        var pid = ""
+        val text = list.get(i).select("div.d_post_content_main").select("cc div").get(0).toString
 
-      }
+        if (text.nonEmpty && text.contains("content_")) {
 
-      val result = map.keySet
+          pid = text.split("content_")(1).split("\"")(0)
+          set.add(pid)
 
-      var allName = ""
-
-      for (s: String <- result) {
-
-        val name = barName + " ," + s.toString
-        set.add(name)
+        }
 
       }
 
-      set
+      (barName, set)
     } catch {
       case e: NullPointerException =>
         null
