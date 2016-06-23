@@ -167,7 +167,7 @@ object BaiduParser {
 
       val list = doc.select("div#j_p_postlist  > div")
 
-      for(i<- 0 until list.size){
+      for(i<- 1 until list.size){ //百度贴吧首层楼不再发送相关信息
 
         var pid = ""
         val text = list.get(i).select("div.d_post_content_main").select("cc div").get(0).toString

@@ -2,6 +2,7 @@ package com.kunyan.dispatcher.scheduler
 
 import _root_.kafka.serializer.StringDecoder
 import com.kunyan.dispatcher.config.{LazyConnections, Platform}
+import com.kunyan.dispatcher.logger.RbtLogger
 import com.kunyan.dispatcher.parser.{SnowballParser, BaiduParser, TaogubaParser}
 import com.kunyan.dispatcher.util.DateUtil
 import org.apache.hadoop.hbase.client.Get
@@ -51,15 +52,25 @@ object Scheduler {
           val attrId = messageMap.get("attr_id").get
 
           val dbResult = getHtml(tableName, rowkey, lazyConnBr.value)
-          val originUrl = dbResult._1
-          val html = dbResult._2
 
-          if (attrId.toInt == Platform.Tieba.id) {
-            parseTieba(lazyConnBr, originUrl, html)
-          } else if (attrId.toInt == Platform.Taoguba.id) {
-            parseTaoguba(lazyConnBr, originUrl, html)
-          } else if (attrId.toInt == Platform.Snowball.id) {
-            parseSnowball(lazyConnBr, originUrl, html)
+          if (null == dbResult) {
+            RbtLogger.error("Get empty data from hbase table! Message :  " + messageMap)
+          } else {
+
+            val originUrl = dbResult._1
+            val html = dbResult._2
+
+            if (attrId.toInt == Platform.Tieba.id) {
+              RbtLogger.warn("Enter Baidu ")
+              parseTieba(lazyConnBr, originUrl, html)
+            } else if (attrId.toInt == Platform.Taoguba.id) {
+              RbtLogger.warn("Enter Taoguba ")
+              parseTaoguba(lazyConnBr, originUrl, html)
+            } else if (attrId.toInt == Platform.Snowball.id) {
+              RbtLogger.warn("Enter xueqiu ")
+              parseSnowball(lazyConnBr, originUrl, html)
+            }
+
           }
 
         } catch {
@@ -124,7 +135,7 @@ object Scheduler {
       if (messages.nonEmpty) {
         lazyConnBr.value.sendTask("robot_stock", messages.map(getUrlJsonString).toSeq)
       } else {
-        println("THIS IS ERROR" + originUrl)
+        RbtLogger.error("THIS IS ERROR" + originUrl)
       }
 
 
@@ -243,7 +254,7 @@ object Scheduler {
     */
   def getNameJsonString(url: String, repostId: String, barName: String): String = {
 
-    val json = "{\"plat_id\":%d, \"preUrl\":\"%s\", \"repostId\":\"%s\", \"barName\":\"%s\", \"timestamp\":\"%s\"}"
+    val json = "{\"plat_id\":%d, \"preUrl\":\"%s\", \"repostid\":\"%s\", \"barName\":\"%s\", \"timestamp\":\"%s\"}"
 
     json.format(Platform.Tieba.id, url, repostId, barName, DateUtil.getDateString)
   }

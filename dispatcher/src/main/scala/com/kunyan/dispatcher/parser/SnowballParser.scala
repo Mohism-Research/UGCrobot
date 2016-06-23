@@ -1,5 +1,6 @@
 package com.kunyan.dispatcher.parser
 
+import com.kunyan.dispatcher.logger.RbtLogger
 import org.jsoup.Jsoup
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.json.JSON
@@ -39,7 +40,7 @@ object SnowballParser {
     try {
 
       if (jsonInfo.isEmpty) {
-        println("\"JSON parse value is empty,please have a check!\"")
+        RbtLogger.error("\"JSON parse value is empty,please have a check!\"")
       } else {
 
         jsonInfo match {
@@ -52,8 +53,8 @@ object SnowballParser {
               result += total
             }
 
-          case None => println("Parsing failed!")
-          case other => println("Unknown data structure :" + other)
+          case None => RbtLogger.error("Parsing failed!")
+          case other => RbtLogger.error("Unknown data structure :" + other)
 
         }
 
